@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema PIX Moderno</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <style>
+        /* --- Reset e Estilos Globais --- */
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1E1E1E;
+            --primary-color: #3B82F6;
+            --primary-hover-color: #2563EB;
+            --text-color: #E5E7EB;
+            --text-muted-color: #9CA3AF;
+            --border-color: #374151;
+            --success-color: #10B981;
+            --error-color: #EF4444;
+            --secondary-button-bg: #374151;
+            --secondary-button-hover: #4B5563;
+        }
+        
+        body.light-mode {
+            --bg-color: #F9FAFB;
+            --surface-color: #FFFFFF;
+            --primary-color: #3B82F6;
+            --primary-hover-color: #2563EB;
+            --text-color: #1F2937;
+            --text-muted-color: #6B7280;
+            --border-color: #D1D5DB;
+            --success-color: #059669;
+            --error-color: #DC2626;
+            --secondary-button-bg: #E5E7EB;
+            --secondary-button-hover: #D1D5DB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- Estrutura Principal --- */
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background-color: var(--surface-color);
+            border-radius: 16px;
+            padding: 28px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .card-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* --- Botão de Tema --- */
+        #themeToggleBtn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #themeToggleBtn:hover {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+        #themeToggleBtn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* --- Abas de Navegação --- */
+        .tab-nav {
+            display: flex;
+            border-radius: 10px;
+            background-color: var(--bg-color);
+            padding: 4px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 10px;
+            background-color: transparent;
+            border: none;
+            color: var(--text-muted-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-button.active {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+        .tab-button:not(.active):hover {
+            background-color: var(--surface-color);
+        }
+        .tab-button svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* --- Conteúdo das Abas --- */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* --- Elementos de Formulário --- */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-muted-color);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* --- Botões --- */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .primary-button, .secondary-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            flex: 1;
+        }
+        .primary-button {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+        .primary-button:hover {
+            background-color: var(--primary-hover-color);
+        }
+        .secondary-button {
+            background-color: var(--secondary-button-bg);
+            color: var(--text-color);
+        }
+        .secondary-button:hover {
+            background-color: var(--secondary-button-hover);
+        }
+        
+        /* --- Mensagens e Resultados --- */
+        #validationResult {
+            text-align: center;
+            margin-top: 16px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            height: 0;
+            overflow: hidden;
+        }
+        #validationResult.show {
+            opacity: 1;
+            height: auto;
+        }
+        #validationResult.valid { background-color: rgba(16, 185, 129, 0.1); color: var(--success-color); }
+        #validationResult.invalid { background-color: rgba(239, 68, 68, 0.1); color: var(--error-color); }
+        
+        #useKeyBtn {
+            display: none;
+            margin: 10px auto 0;
+            width: auto;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
+        /* --- Seção do QRCode --- */
+        #qrCodeContainer {
+            margin-top: 24px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: none;
+        }
+        #qrCodeContainer.show {
+            opacity: 1;
+            transform: translateY(0);
+            display: block;
+        }
+        #qrcodeCanvas { background-color: #FFFFFF; padding: 12px; border-radius: 12px; max-width: 100%; height: auto; }
+        #downloadBtn { width: auto; padding: 10px 20px; margin-top: 16px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="card-header">
+            <h1>Sistema PIX</h1>
+            <button id="themeToggleBtn" aria-label="Alternar tema">
+                </button>
+        </div>
+
+        <nav class="tab-nav">
+            <button class="tab-button active" onclick="switchTab('validator')">
+                <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                Validador
+            </button>
+            <button class="tab-button" onclick="switchTab('generator')">
+                <svg fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"></path></svg>
+                Gerador PIX
+            </button>
+        </nav>
+
+        <div id="validator" class="tab-content active">
+            <div class="form-group">
+                <label for="docInput">CPF ou CNPJ</label>
+                <input type="text" id="docInput" placeholder="Digite o documento para validar">
+            </div>
+            <button class="primary-button" onclick="validarDocumento()">Validar</button>
+            <p id="validationResult"></p>
+            <button id="useKeyBtn" class="secondary-button" onclick="useValidatedKey()">Usar Chave no Gerador</button>
+        </div>
+
+        <div id="generator" class="tab-content">
+            <div class="form-group">
+                <label for="pixKey">Chave PIX</label>
+                <input type="text" id="pixKey" placeholder="Sua chave PIX">
+            </div>
+            <div class="form-group">
+                <label for="pixNome">Nome do Recebedor</label>
+                <input type="text" id="pixNome" placeholder="Nome que aparecerá no PIX">
+            </div>
+             <div class="form-group">
+                <label for="pixCidade">Cidade</label>
+                <input type="text" id="pixCidade" placeholder="Cidade do recebedor">
+            </div>
+            <div class="form-group">
+                <label for="pixValor">Valor (Opcional)</label>
+                <input type="number" id="pixValor" placeholder="0.00">
+            </div>
+            <div class="button-group">
+                <button class="secondary-button" onclick="clearGeneratorFields()">Limpar</button>
+                <button class="primary-button" onclick="gerarQRCodePIX()">Gerar QRCode</button>
+            </div>
+            
+            <div id="qrCodeContainer">
+                <canvas id="qrcodeCanvas" width="256" height="256"></canvas>
+                <button id="downloadBtn" class="primary-button" onclick="baixarQRCode()">Baixar Imagem</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- INICIALIZAÇÃO DA PÁGINA ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Aplica máscara de input
+            document.getElementById('docInput').addEventListener('input', applyMask);
+            
+            // Configura o tema inicial (dark/light)
+            setupTheme();
+        });
+
+        // --- LÓGICA DO TEMA (DARK/LIGHT MODE) ---
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.95-4.243l-1.59-1.591M3.75 12H6m4.95-4.243l-1.59 1.591M12 18a6 6 0 100-12 6 6 0 000 12z" /></svg>`;
+        const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>`;
+
+        function setupTheme() {
+            const isLight = localStorage.getItem('lightThemeEnabled') === 'true';
+            document.body.classList.toggle('light-mode', isLight);
+            themeToggleBtn.innerHTML = isLight ? moonIcon : sunIcon;
+            themeToggleBtn.addEventListener('click', toggleTheme);
+        }
+
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-mode');
+            localStorage.setItem('lightThemeEnabled', isLight);
+            themeToggleBtn.innerHTML = isLight ? moonIcon : sunIcon;
+        }
+        
+        // --- LÓGICA DAS MÁSCARAS DE INPUT ---
+        function applyMask(event) {
+            let value = event.target.value.replace(/\D/g, '');
+            if (value.length > 14) value = value.slice(0, 14);
+
+            if (value.length > 11) { // CNPJ
+                value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+            } else { // CPF
+                value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            }
+            event.target.value = value;
+        }
+        
+        // --- LÓGICA DAS ABAS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+
+        // --- LÓGICA DO VALIDADOR ---
+        function validarDocumento() {
+            const docInput = document.getElementById("docInput");
+            const resultadoEl = document.getElementById("validationResult");
+            const useKeyBtn = document.getElementById("useKeyBtn");
+            const valor = docInput.value.replace(/\D/g, '');
+            
+            resultadoEl.classList.remove('show', 'valid', 'invalid');
+            useKeyBtn.style.display = 'none';
+
+            let isValid = false;
+            let message = '❌ Documento inválido';
+
+            if (valor.length === 11 && validarCPF(valor)) {
+                isValid = true;
+                message = '✅ CPF Válido!';
+            } else if (valor.length === 14 && validarCNPJ(valor)) {
+                isValid = true;
+                message = '✅ CNPJ Válido!';
+            }
+
+            resultadoEl.textContent = message;
+            resultadoEl.classList.add(isValid ? 'valid' : 'invalid');
+            if(isValid) useKeyBtn.style.display = 'block';
+
+            setTimeout(() => resultadoEl.classList.add('show'), 10);
+        }
+        
+        function useValidatedKey() {
+            const docInput = document.getElementById("docInput");
+            document.getElementById('pixKey').value = docInput.value.replace(/\D/g, '');
+            switchTab('generator');
+        }
+
+        function validarCPF(cpf) {
+            if (!cpf || cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+            let soma = 0, d1, d2;
+            for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+            d1 = 11 - (soma % 11);
+            if (d1 >= 10) d1 = 0;
+            if (d1 !== parseInt(cpf[9])) return false;
+            soma = 0;
+            for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+            d2 = 11 - (soma % 11);
+            if (d2 >= 10) d2 = 0;
+            return d2 === parseInt(cpf[10]);
+        }
+
+        function validarCNPJ(cnpj) {
+            if (!cnpj || cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+            const calcDV = (str, pesos) => {
+                let soma = str.split('').reduce((acc, digit, i) => acc + (parseInt(digit) * pesos[i]), 0);
+                const resto = soma % 11;
+                return resto < 2 ? 0 : 11 - resto;
+            };
+            const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+            const pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+            if (calcDV(cnpj.substring(0, 12), pesos1) !== parseInt(cnpj[12])) return false;
+            if (calcDV(cnpj.substring(0, 13), pesos2) !== parseInt(cnpj[13])) return false;
+            return true;
+        }
+
+        // --- LÓGICA DO GERADOR DE QRCODE ---
+        function clearGeneratorFields() {
+            document.getElementById("pixKey").value = '';
+            document.getElementById("pixNome").value = '';
+            document.getElementById("pixCidade").value = '';
+            document.getElementById("pixValor").value = '';
+            document.getElementById("qrCodeContainer").classList.remove('show');
+        }
+
+        function gerarQRCodePIX() {
+            const key = document.getElementById("pixKey").value.trim();
+            const nome = document.getElementById("pixNome").value.trim();
+            const cidade = document.getElementById("pixCidade").value.trim();
+            const valor = parseFloat(document.getElementById("pixValor").value) || 0.0;
+            const qrContainer = document.getElementById("qrCodeContainer");
+
+            if (!key || !nome || !cidade) {
+                alert("Preencha todos os campos obrigatórios (Chave, Nome e Cidade)!");
+                return;
+            }
+
+            const payload = gerarPayloadPIX(key, nome, cidade, valor.toFixed(2));
+            const canvas = document.getElementById('qrcodeCanvas');
+
+            QRCode.toCanvas(canvas, payload, { width: 256, margin: 1 }, function (error) {
+                if (error) {
+                    console.error(error);
+                    alert("Erro ao gerar QRCode. Verifique os dados.");
+                    qrContainer.classList.remove('show');
+                } else {
+                    qrContainer.classList.add('show');
+                }
+            });
+        }
+        
+        function formatarCampo(id, valor) {
+            const len = valor.length.toString().padStart(2, '0');
+            return `${id}${len}${valor}`;
+        }
+        
+        function gerarPayloadPIX(chave, nome, cidade, valor) {
+            const payload = [
+                formatarCampo('00', '01'),
+                formatarCampo('26', formatarCampo('00', 'BR.GOV.BCB.PIX') + formatarCampo('01', chave.replace(/\D/g,''))),
+                formatarCampo('52', '0000'),
+                formatarCampo('53', '986'),
+                formatarCampo('54', valor),
+                formatarCampo('58', 'BR'),
+                formatarCampo('59', nome.substring(0, 25).replace(/[^a-zA-Z0-9 ]/g, '')),
+                formatarCampo('60', cidade.substring(0, 15).replace(/[^a-zA-Z0-9 ]/g, '')),
+                formatarCampo('62', formatarCampo('05', '***'))
+            ].join('');
+
+            const payloadComCRC = payload + "6304";
+            const crc16 = CRC16(payloadComCRC);
+            return payloadComCRC + crc16;
+        }
+
+        function CRC16(str) {
+            let crc = 0xFFFF;
+            for (let c of str) {
+                crc ^= c.charCodeAt(0) << 8;
+                for (let i = 0; i < 8; i++) {
+                    crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+                }
+            }
+            return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, "0");
+        }
+
+        function baixarQRCode() {
+            const canvas = document.getElementById("qrcodeCanvas");
+            const link = document.createElement("a");
+            link.download = "QRCode-PIX.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        }
+    </script>
+
+</body>
+</html>
